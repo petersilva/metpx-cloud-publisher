@@ -27,11 +27,17 @@
 #
 # =================================================================
 
+"""
+
+
+
+"""
 import logging
 import os
+from sarracenia.flowcb import FlowCB
 
 
-class MetPXCloudPublisher:
+class MetPXCloudPublisher(FlowCB):
     """core cloud data publisher"""
 
     def __init__(self, parent):
@@ -46,7 +52,7 @@ class MetPXCloudPublisher:
         if None in [self.type, self.container_name]:
             raise EnvironmentError('environment variables not set')
 
-    def dispatch(self, parent) -> bool:
+    def after_work(self, worklist) -> bool:
         """
         sarracenia dispatcher
 
@@ -55,23 +61,21 @@ class MetPXCloudPublisher:
         :returns: `bool` of dispatch result
         """
 
-        try:
-            filepath = parent.msg.local_file
-            parent.logger.debug('Filepath: {}'.format(filepath))
-            identifier = filepath.replace(parent.currentDir, '').lstrip('/')
+        for msg in worklist.ok:
+           try:
+               filepath = msg['new_dir'] + os.sep + msg['new_file']
+               logger.debug('Filepath: {}'.format(filepath))
+               identifier = msg['new_file']
 
-            if self.type == 's3':
-                self.publish_to_s3(identifier, filepath)
-            elif self.type == 'azure':
-                self.publish_to_azure(identifier, filepath)
+               if self.type == 's3':
+                   self.publish_to_s3(identifier, filepath)
+               elif self.type == 'azure':
+                   self.publish_to_azure(identifier, filepath)
 
-            return True
+           except Exception as err:
+               print("ERROR", err)
+               logger.warning(err)
 
-        except Exception as err:
-            print("ERROR", err)
-            parent.logger.warning(err)
-
-            return False
 
     def publish_to_s3(self, parent, blob_identifier: str,
                       filepath: str) -> bool:
@@ -149,7 +153,3 @@ class MetPXCloudPublisher:
 
     def __repr__(self):
         return '<MetPXCloudPublisher>'
-
-
-event = MetPXCloudPublisher(self)  # noqa
-self.on_file = event.dispatch  # noqa
