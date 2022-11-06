@@ -36,6 +36,7 @@ import logging
 import os
 from sarracenia.flowcb import FlowCB
 
+logger = logging.getLogger(__name__)
 
 class MetPXCloudPublisher(FlowCB):
     """core cloud data publisher"""
@@ -48,17 +49,17 @@ class MetPXCloudPublisher(FlowCB):
         self.container_name = os.environ.get(
             'METPX_CLOUD_PUBLISHER_CONTAINER_NAME', None)
 
-        self.LOGGER = logging.getLogger(__name__)
         if None in [self.type, self.container_name]:
             raise EnvironmentError('environment variables not set')
 
-    def after_work(self, worklist) -> bool:
+    def after_work(self, worklist) -> void:
         """
         sarracenia dispatcher
 
-        :param parent: `sarra.sr_subscribe.sr_subscribe`
+        :param parent: `sarracenia.flowcb`
 
-        :returns: `bool` of dispatch result
+        :returns: void
+   
         """
 
         for msg in worklist.ok:
@@ -103,10 +104,10 @@ class MetPXCloudPublisher(FlowCB):
         try:
             with open(filepath, 'rb') as data:
                 s3_client.upload_fileobj(data, s3_bucket_name, blob_identifier)
-                self.LOGGER.info('published to {}'.format(url))
+                logger.info('published to {}'.format(url))
                 parent.msg.notice = url
         except ClientError as err:
-            self.LOGGER.error(err)
+            logger.error(err)
             return False
 
         return True
@@ -132,7 +133,7 @@ class MetPXCloudPublisher(FlowCB):
             blob_service_client = BlobServiceClient.from_connection_string(
                 connection_string)
         except ValueError as err:
-            self.LOGGER.error(err)
+            logger.error(err)
             return False
 
         blob_client = blob_service_client.get_blob_client(
@@ -142,11 +143,11 @@ class MetPXCloudPublisher(FlowCB):
         try:
             with open(filepath, 'rb') as data:
                 result = blob_client.upload_blob(data)
-                self.LOGGER.debug(result)
-                self.LOGGER.info('published to {}'.format(blob_client.url))
+                logger.debug(result)
+                logger.info('published to {}'.format(blob_client.url))
                 parent.msg.notice = blob_client.url
         except ResourceNotFoundError as err:
-            self.LOGGER.error(err)
+            logger.error(err)
             return False
 
         return True
