@@ -1,4 +1,4 @@
-# metpx-cloud-publisher
+# metpxCloudPublisher
 
 ## Overview
 
@@ -17,33 +17,36 @@ MetPX-Sarracenia plugin for publishing data to cloud environments.
 
 ### Dependencies
 Dependencies are listed in [requirements.txt](requirements.txt). Dependencies
-are automatically installed during metpx-cloud-publisher installation.
+are automatically installed during metpxCloudPublisher installation.
 
-### Installing metpx-cloud-publisher
+### Installing metpxCloudPublisher
 
 ```bash
 # setup virtualenv
-python3 -m venv --system-site-packages metpx-cloud-publisher
-cd metpx-cloud-publisher
+python3 -m venv --system-site-packages metpxCloudPublisher
+cd metpxCloudPublisher
 source bin/activate
 
 # clone codebase and install
-git clone https://github.com/wmo-cop/metpx-cloud-publisher.git
-cd metpx-cloud-publisher
+git clone https://github.com/wmo-cop/metpxCloudPublisher.git
+cd metpxCloudPublisher
 pip3 install -r requirements.txt
 
 # configure environment
-cp metpx-cloud-publisher.env dev.env
+cp metpxCloudPublisher.env dev.env
 vi dev.env  # update S3 or Azure credentials and path to MetPX filter
 . dev.env
 
-vi metpx-cloud-publisher.conf  # adjust on_file path and desired subtopics
+vi metpxCloudPublisher.conf  # adjust on_file path and desired subtopics
 ```
 
 ## Running
 
 ```bash
-sr_subscribe foreground metpx-cloud-publisher.conf
+mkdir ~/.config ~/.config/sr3
+cp metpxCloudPublisher.conf ~/.config/sr3/subscribe
+sr3 foreground subscribe/metpxCloudPublisher.conf
+
 ```
 
 ## Development
@@ -54,7 +57,7 @@ sr_subscribe foreground metpx-cloud-publisher.conf
 
 ### Bugs and Issues
 
-All bugs, enhancements and issues are managed on [GitHub](https://github.com/wmo-cop/metpx-cloud-publisher/issues).
+All bugs, enhancements and issues are managed on [GitHub](https://github.com/wmo-cop/metpxCloudPublisher/issues).
 
 ## Contact
 

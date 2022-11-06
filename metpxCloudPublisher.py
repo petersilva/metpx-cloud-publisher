@@ -27,11 +27,8 @@
 #
 # =================================================================
 
-"""
 
 
-
-"""
 import logging
 import os
 from sarracenia.flowcb import FlowCB
@@ -41,8 +38,10 @@ logger = logging.getLogger(__name__)
 class MetPXCloudPublisher(FlowCB):
     """core cloud data publisher"""
 
-    def __init__(self, parent):
+    def __init__(self, options):
         """initialize"""
+
+        self.o = options
 
         self.type = os.environ.get('METPX_CLOUD_PUBLISHER_TYPE', None)
 
@@ -52,13 +51,12 @@ class MetPXCloudPublisher(FlowCB):
         if None in [self.type, self.container_name]:
             raise EnvironmentError('environment variables not set')
 
-    def after_work(self, worklist) -> void:
+    def after_work(self, worklist) -> None:
         """
         sarracenia dispatcher
 
-        :param parent: `sarracenia.flowcb`
-
-        :returns: void
+        :param worklist: `sarracenia.flowcb`
+        :returns: None 
    
         """
 
@@ -73,17 +71,18 @@ class MetPXCloudPublisher(FlowCB):
                elif self.type == 'azure':
                    self.publish_to_azure(identifier, filepath)
 
+               logger.debug('not checking return status is odd, do we want retry-logic?')
+
            except Exception as err:
                print("ERROR", err)
                logger.warning(err)
 
 
-    def publish_to_s3(self, parent, blob_identifier: str,
+    def publish_to_s3(self, msg, blob_identifier: str,
                       filepath: str) -> bool:
         """
         s3 object publisher
 
-        :param parent: `sarra.sr_subscribe.sr_subscribe`
         :param blob_identifier: `str` of blob id
         :param filepath: `str` of local filepath to upload
 
@@ -105,19 +104,17 @@ class MetPXCloudPublisher(FlowCB):
             with open(filepath, 'rb') as data:
                 s3_client.upload_fileobj(data, s3_bucket_name, blob_identifier)
                 logger.info('published to {}'.format(url))
-                parent.msg.notice = url
         except ClientError as err:
             logger.error(err)
             return False
 
         return True
 
-    def publish_to_azure(self, parent, blob_identifier: str,
+    def publish_to_azure(self, msg, blob_identifier: str,
                          filepath: str) -> bool:
         """
         Azure blob file publisher
 
-        :param parent: `sarra.sr_subscribe.sr_subscribe`
         :param blob_identifier: `str` of blob id
         :param filepath: `str` of local filepath to upload
 
@@ -145,7 +142,6 @@ class MetPXCloudPublisher(FlowCB):
                 result = blob_client.upload_blob(data)
                 logger.debug(result)
                 logger.info('published to {}'.format(blob_client.url))
-                parent.msg.notice = blob_client.url
         except ResourceNotFoundError as err:
             logger.error(err)
             return False
