@@ -37,15 +37,16 @@ cp metpxCloudPublisher.env dev.env
 vi dev.env  # update S3 or Azure credentials and path to MetPX filter
 . dev.env
 
-vi metpxCloudPublisher.conf  # adjust on_file path and desired subtopics
+mkdir ~/.config ~/.config/sr3
+cp metpxCloudPublisher.conf ~/.config/sr3/subscribe
+vi ~/.config/sr3/subscribe/metpxCloudPublisher.conf  # adjust on_file path and desired subtopics
+
 ```
 
 ## Running
 
 ```bash
-mkdir ~/.config ~/.config/sr3
-cp metpxCloudPublisher.conf ~/.config/sr3/subscribe
-sr3 foreground subscribe/metpxCloudPublisher.conf
+sr3 start subscribe/metpxCloudPublisher.conf
 
 ```
 
